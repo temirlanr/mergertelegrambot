@@ -4,6 +4,7 @@ import pandas as pd
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackContext
+from telegram.files.document import Document
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -21,30 +22,55 @@ START_MERGING, FIRST_FILE, SECOND_FILE, RESULT = range(4)
 # Functions
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Привет! Я тут чтобы помочь. Отправь /help для справки по боту.')
+    update.message.reply_text('Привет! Отправьте /help для справки по боту.')
 
 
 def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text()
+    update.message.reply_text("Вам нужно будет вызвать команду /start_merging для того чтобы бот начал принимать файлы. Бот будет просить файлы по одному так что не загружайте несколько файлов сразу, только по одному.\n\nВ любой момент можно вызвать команду /cancel чтобы отменить все.")
 
 
 def start_merging(update: Update, context: CallbackContext) -> int:
+
+    update.message.reply_text('Отправьте пожалуйста первый файл...\n\nЛибо /cancel чтобы отменить.')
 
     return FIRST_FILE
 
 
 def first_file(update: Update, context: CallbackContext) -> int:
 
+    global file1
+    file1 = update.message.document.file_name
+    update.message.document.get_file().download
+
+    update.message.reply_text('Отправьте пожалуйста второй файл...\n\nЛибо /cancel чтобы отменить.')
+
     return SECOND_FILE
 
 
 def second_file(update: Update, context: CallbackContext) -> int:
 
+    global file2
+    file2 = update.message.document.file_name
+    update.message.document.get_file().download
+
+    first = pd.read_excel(file1)
+    second = pd.read_excel(file2)
+
+    first.rename(columns={"Контрагент": "Плательщик"}, inplace=True)
+    second.rename(columns={"Контрагент": "Плательщик"}, inplace=True)
+
+    merged = pd.merge(first, second, on=['Сумма', 'Плательщик'], how='outer')
+    merged.to_excel('result.xlsx', index=False)
+
     return RESULT
 
 
 def result(update: Update, context: CallbackContext) -> int:
+
+    context.bot.send_document(chat_id=update.effective_chat.id, document='result.xlsx')
+
+    update.message.reply_text('Готово!')
 
     return ConversationHandler.END
 
@@ -91,7 +117,7 @@ def main():
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN, 
-                          webhook_url="https://somesecretsantabot.herokuapp.com/" + TOKEN)
+                          webhook_url="https://mergertelegrambot.herokuapp.com//" + TOKEN)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
