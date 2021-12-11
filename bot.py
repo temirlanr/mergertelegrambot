@@ -111,7 +111,7 @@ def main():
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN, 
-                          webhook_url="https://mergertelegrambot.herokuapp.com//" + TOKEN)
+                          webhook_url="https://mergertelegrambot.herokuapp.com/" + TOKEN)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
