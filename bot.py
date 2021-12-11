@@ -18,7 +18,7 @@ PORT = int(os.environ.get('PORT', '8442'))
 TOKEN = os.environ["TOKEN"]
 
 
-START_MERGING, FIRST_FILE, SECOND_FILE, RESULT = range(4)
+START_MERGING, FIRST_FILE, SECOND_FILE = range(3)
 # Functions
 def start(update, context):
     """Send a message when the command /start is issued."""
@@ -63,11 +63,6 @@ def second_file(update: Update, context: CallbackContext) -> int:
     merged = pd.merge(first, second, on=['Сумма', 'Плательщик'], how='outer')
     merged.to_excel('result.xlsx', index=False)
 
-    return RESULT
-
-
-def result(update: Update, context: CallbackContext) -> int:
-
     context.bot.send_document(chat_id=update.effective_chat.id, document='result.xlsx')
 
     update.message.reply_text('Готово!')
@@ -103,9 +98,8 @@ def main():
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("list", list))
     dp.add_handler(ConversationHandler(entry_points=[CommandHandler('start_merging', start_merging)],
-                                       states={FIRST_FILE: [CommandHandler('cancel', cancel), MessageHandler(first_file)],
-                                               SECOND_FILE: [CommandHandler('cancel', cancel), MessageHandler(second_file)],
-                                               RESULT: [CommandHandler('cancel', cancel), MessageHandler(result)],},
+                                       states={FIRST_FILE: [CommandHandler('cancel', cancel), MessageHandler(Filters.document, first_file)],
+                                               SECOND_FILE: [CommandHandler('cancel', cancel), MessageHandler(Filters.document, second_file)],},
                                        fallbacks=[CommandHandler('cancel', cancel)],))
 
     # on noncommand i.e message - echo the message on Telegram
