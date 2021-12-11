@@ -1,6 +1,7 @@
 import logging
 import os
 import pandas as pd
+from pathlib import Path
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackContext
@@ -33,26 +34,26 @@ def help(update, context):
 def start_merging(update: Update, context: CallbackContext) -> int:
 
     update.message.reply_text('Отправьте пожалуйста первый файл...\n\nЛибо /cancel чтобы отменить.')
-    
-    global file1
-    file1 = update.message.document.file_name
-    update.message.document.get_file().download
 
     return FIRST_FILE
 
 
 def first_file(update: Update, context: CallbackContext) -> int:
 
-    update.message.reply_text('Отправьте пожалуйста второй файл...\n\nЛибо /cancel чтобы отменить.')
-
-    global file2
-    file2 = update.message.document.file_name
+    global file1
+    file1 = update.message.document.file_name
     update.message.document.get_file().download
+
+    update.message.reply_text('Отправьте пожалуйста второй файл...\n\nЛибо /cancel чтобы отменить.')
 
     return SECOND_FILE
 
 
 def second_file(update: Update, context: CallbackContext) -> int:
+
+    global file2
+    file2 = update.message.document.file_name
+    update.message.document.get_file().download
 
     first = pd.read_excel(file1)
     second = pd.read_excel(file2)
@@ -63,7 +64,7 @@ def second_file(update: Update, context: CallbackContext) -> int:
     merged = pd.merge(first, second, on=['Сумма', 'Плательщик'], how='outer')
     merged.to_excel('result.xlsx', index=False)
 
-    context.bot.send_document(chat_id=update.effective_chat.id, document='result.xlsx')
+    context.bot.send_document(chat_id=update.effective_chat.id, document=Path('./result.xlsx'))
 
     update.message.reply_text('Готово!')
 
