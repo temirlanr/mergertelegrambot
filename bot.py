@@ -33,26 +33,26 @@ def help(update, context):
 def start_merging(update: Update, context: CallbackContext) -> int:
 
     update.message.reply_text('Отправьте пожалуйста первый файл...\n\nЛибо /cancel чтобы отменить.')
+    
+    global file1
+    file1 = update.message.document.file_name
+    update.message.document.get_file().download
 
     return FIRST_FILE
 
 
 def first_file(update: Update, context: CallbackContext) -> int:
 
-    global file1
-    file1 = update.message.document.file_name
-    update.message.document.get_file().download
-
     update.message.reply_text('Отправьте пожалуйста второй файл...\n\nЛибо /cancel чтобы отменить.')
+
+    global file2
+    file2 = update.message.document.file_name
+    update.message.document.get_file().download
 
     return SECOND_FILE
 
 
 def second_file(update: Update, context: CallbackContext) -> int:
-
-    global file2
-    file2 = update.message.document.file_name
-    update.message.document.get_file().download
 
     first = pd.read_excel(file1)
     second = pd.read_excel(file2)
