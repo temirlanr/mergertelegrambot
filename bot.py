@@ -64,7 +64,7 @@ def second_file(update: Update, context: CallbackContext) -> int:
     merged = pd.merge(first, second, on=['Сумма', 'Плательщик'], how='outer')
     merged.to_excel(f'result_{str(file1).replace(".xls", "")}.xlsx', index=False)
 
-    context.bot.send_document(chat_id=update.effective_chat.id, document=Path(f'./result_{str(file1).replace(".xls", "")}.xlsx'))
+    context.bot.send_document(chat_id=update.effective_chat.id, document=open('result_{str(file1).replace(".xls", "")}.xlsx', 'rb'))
 
     update.message.reply_text('Готово!')
 
