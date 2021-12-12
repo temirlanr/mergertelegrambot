@@ -42,7 +42,7 @@ def first_file(update: Update, context: CallbackContext) -> int:
 
     global file1
     file1 = update.message.document.file_name
-    update.message.document.get_file().download
+    update.message.document.get_file().download(Path('.'))
 
     update.message.reply_text('Отправьте пожалуйста второй файл...\n\nЛибо /cancel чтобы отменить.')
 
@@ -53,7 +53,7 @@ def second_file(update: Update, context: CallbackContext) -> int:
 
     global file2
     file2 = update.message.document.file_name
-    update.message.document.get_file().download
+    update.message.document.get_file().download(Path('.'))
 
     first = pd.read_excel(file1)
     second = pd.read_excel(file2)
@@ -62,9 +62,9 @@ def second_file(update: Update, context: CallbackContext) -> int:
     second.rename(columns={"Контрагент": "Плательщик"}, inplace=True)
 
     merged = pd.merge(first, second, on=['Сумма', 'Плательщик'], how='outer')
-    merged.to_excel('result.xlsx', index=False)
+    merged.to_excel(f'result_{str(file1).replace(".xls", "")}.xlsx', index=False)
 
-    context.bot.send_document(chat_id=update.effective_chat.id, document=Path('./result.xlsx'))
+    context.bot.send_document(chat_id=update.effective_chat.id, document=Path(f'./result_{str(file1).replace(".xls", "")}.xlsx'))
 
     update.message.reply_text('Готово!')
 
@@ -109,6 +109,7 @@ def main():
     dp.add_error_handler(error)
 
     # Start the Bot
+    # updater.start_polling()
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN, 
