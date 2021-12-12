@@ -42,7 +42,7 @@ def first_file(update: Update, context: CallbackContext) -> int:
 
     global file1
     file1 = update.message.document.file_name
-    update.message.document.get_file().download(Path('.'))
+    update.message.document.get_file().download(Path(f'./{file1}'))
 
     update.message.reply_text('Отправьте пожалуйста второй файл...\n\nЛибо /cancel чтобы отменить.')
 
@@ -53,7 +53,7 @@ def second_file(update: Update, context: CallbackContext) -> int:
 
     global file2
     file2 = update.message.document.file_name
-    update.message.document.get_file().download(Path('.'))
+    update.message.document.get_file().download(Path(f'./{file2}'))
 
     first = pd.read_excel(file1)
     second = pd.read_excel(file2)
